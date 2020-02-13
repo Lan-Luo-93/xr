@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>360&deg; Image</title>
+    <meta name="description" content="360&deg; Image - A-Frame">
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+<!-- include ar.js for A-Frame -->
+    <script src="../../../dist/aframe-master.js"></script>
+    <script src="https://unpkg.com/aframe-particle-system-component@1.0.9/dist/aframe-particle-system-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-animation-component@%5E3.2.x/dist/aframe-animation-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-sky src="img/norway.JPG" rotation="0 -130 0"></a-sky>
+      <a-entity
+        particle-system="preset: snow; particleCount: 10000;"
+        position="0 1.25 -5"></a-entity>
+
+      <a-text font="monoid" value="Tromso, Norway" width="8" position="-2.5 0.25 -1.5"
+              rotation="0 15 0"></a-text>
+    </a-scene>
+  </body>
+</html>
