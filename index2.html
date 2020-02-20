@@ -8,6 +8,11 @@
   </head>
   <body>
     <a-scene>
+      <a-assets>
+        <a-asset-item id="Pikachu-mtl" src="models/test/materials.mtl"></a-asset-item>
+        <a-asset-item id="Pikachu" src="models/test/Pikachu.obj"></a-asset-item>
+        
+      </a-assets>
     <a-entity id="rain" particle-system="preset: rain; color: #24CAFF; particleCount: 1000"></a-entity>
     <a-entity id="sphere" geometry="primitive: sphere"
               material="color: white; shader: flat"
@@ -21,6 +26,9 @@
                 material="shader: gradient; topColor: 235 235 245; bottomColor: 185 185 210"
                 scale="-1 1 1"></a-entity>
     <a-entity id="light" light="type: ambient; color: #888"></a-entity>
+    <a-entity obj-model="obj: #Pikachu; mtl: #Pikachu-mtl" position="0 0.5 -5" scale=".25 .25 .25"
+    animation="property: position; easing: easeInOutQuad; dir: alternate; dur: 1000; to: 0 -0.10 -5; loop: true">
+    </a-entity>
     </a-scene>
   </body>
 </html>
