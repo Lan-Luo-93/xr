@@ -60,7 +60,15 @@
           raycaster="objects: .link"></a-cursor>
       </a-entity> -->
       <a-entity id="cameraRig" position="0 0.1 0">
-        <a-entity camera wasd-controls look-controls></a-entity>
+        <a-entity camera wasd-controls look-controls>
+          <a-cursor
+          id="cursor"
+          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+          animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+          event-set__mouseenter="_event: mouseenter; color: springgreen"
+          event-set__mouseleave="_event: mouseleave; color: black"
+          raycaster="objects: .link"></a-cursor>
+        </a-entity>
         <a-entity id="rightHand" mixin="teleport" laser-controls="hand: right" vive-controls="hand: right" oculus-go-controls="hand: right" oculus-touch-controls="hand: right"></a-entity>
         <a-entity id="leftHand" mixin="teleport" laser-controls="hand: left" vive-controls="hand: left" oculus-go-controls="hand: left" oculus-touch-controls="hand: left"></a-entity>
 </a-entity>
