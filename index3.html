@@ -9,6 +9,8 @@
     <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
     <script src="https://unpkg.com/aframe-template-component@3.2.1/dist/aframe-template-component.min.js"></script>
     <script src="https://unpkg.com/aframe-proxy-event-component@2.1.0/dist/aframe-proxy-event-component.min.js"></script>
+    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
+
   </head>
   <body>
     <a-scene>
@@ -20,6 +22,7 @@
         <audio id="click-sound" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/audio/click.ogg"></audio>
         <img id="cubes" crossorigin="anonymous" src="img/Malibu.jpg">
         <img id="sechelt" crossorigin="anonymous" src="img/Canyon.jpg">
+        <a-mixin id="teleport" teleport-controls="type: parabolic; button: trigger; cameraRig: #cameraRig; defaultPlaneSize: 1000; "></a-mixin>
 
         <!-- Image link template to be reused. -->
         <script id="link" type="text/html">
@@ -47,7 +50,7 @@
       </a-entity>
 
       <!-- Camera + cursor. -->
-      <a-entity id="camera" camera look-controls>
+      <!-- <a-entity id="camera" camera look-controls>
         <a-cursor
           id="cursor"
           animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
@@ -55,7 +58,12 @@
           event-set__mouseenter="_event: mouseenter; color: springgreen"
           event-set__mouseleave="_event: mouseleave; color: black"
           raycaster="objects: .link"></a-cursor>
-      </a-entity>
+      </a-entity> -->
+      <a-entity id="cameraRig" position="0 0.1 0">
+        <a-entity camera wasd-controls look-controls></a-entity>
+        <a-entity id="rightHand" mixin="teleport" laser-controls="hand: right" vive-controls="hand: right" oculus-go-controls="hand: right" oculus-touch-controls="hand: right"></a-entity>
+        <a-entity id="leftHand" mixin="teleport" laser-controls="hand: left" vive-controls="hand: left" oculus-go-controls="hand: left" oculus-touch-controls="hand: left"></a-entity>
+</a-entity>
     </a-scene>
   </body>
 </html>
