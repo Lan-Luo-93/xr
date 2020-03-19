@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Pano Jumper</title>
+		<meta charset="utf-8" />
+		<script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>		
+		<script src="https://unpkg.com/aframe-render-order-component@1.1.0/dist/aframe-render-order-component.min.js"></script>
+		<script src="https://unpkg.com/aframe-event-set-component@3.x.x/dist/aframe-event-set-component.min.js"></script>
+	</head>
+  
+	<body>
+	<script>	
+	/* buttoncontrol - attached to each button entity.
+		Listens for clicks on the button. On click event:
+		Launches animation on the camera to move to position of button that was clicked.
+		Launches animation that turns on the opacity of the sphere paired with its button.
+		Calls the panomanager to turn off the current sphere.	*/
+		AFRAME.registerComponent('buttoncontrol', {	
+		schema: {
+			pano:{type:'string',default: 'pSphere'} // the pano associated with this button
+		},	
+		init: function(){	
+			var el = this.el;		
+			var cam = document.querySelector('#camera'); // Get the camera
+			//var panoManEntity = document.querySelector('#panoMan'); // Get the panoman entity, that has panomanager attached.
+			var panoName = this.data.pano;	// The name of the sphere entity (panorama) associated with this button. Set in entity declaration.
+			//console.log(el.id, panoName);	
+
+			this.el.addEventListener('click', function(evt){				
+				// Animate the camera moving to the button position
+				var btnpos = el.getAttribute('position');  // Get the position of the button
+				var cam = document.querySelector('#camera');
+				var campos = cam.getAttribute('position');		
+				cam.setAttribute('animation__jump', {  property: 'position',
+ 														 from: { x: campos.x, y: campos.y, z: campos.z },
+ 														 to: { x: btnpos.x, y: btnpos.y, z: btnpos.z }
+													});			
+				cam.emit('camjump');				
+				
+				// Animate the opacity fades for the current (fadeout) and new (fadein).
+				//console.log('button clicked: ',el.id);
+				var newPanoEnt = document.querySelector('#'+ panoName );
+				//console.log('newPanoEnt: ', newPanoEnt);
+				newPanoEnt.setAttribute('visible', 'true'); // unhide the newly selected pano sphere.
+				newPanoEnt.setAttribute('material', 'opacity', '1');
+				newPanoEnt.setAttribute('render-order', '8');
+				//newPanoEnt.emit('panofadein');// Launch fade in animation for the new pano.
+				
+				// Set the names of old and new pano for crossfade animation.
+				gOldPano = gCurrentPano;
+				gCurrentPano = panoName;
+
+				//Fade out the old pano. get the current pano sphere entity 	
+				var oldPanoEnt =  document.querySelector("#"+gOldPano);  
+				oldPanoEnt.setAttribute('render-order', '9');
+				//console.log('oldPanoEnt: ', oldPanoEnt.id);
+				//printSpheres(); // print the opacity and visible values to the console.
+				oldPanoEnt.emit('panofadeout'); // Fade out the old panorama
+				//oldPanoEnt.setAttribute('visible', 'false'); 
+
+				// Hide all the buttons while teleporting.
+				var i;
+				for (i=1; i< 4; i++ ){
+					document.querySelector('#button'+ i.toString()).setAttribute('visible', 'false');
+				}
+			});	
+		}
+	});	
+
+	/*	 sphereControl - attached to each sphere pano.
+		Hides (set visible component) the sphere after it is faded out.
+		Unhides the sphere, when it becomes the current pano and needs to fade in. */
+	AFRAME.registerComponent('spherecontrol',{
+		init: function(){
+			var el = this.el;
+			var panoManEntity = document.querySelector('#panoMan'); 
+			console.log(el.id+" opacity: "+ el.getAttribute('material').opacity);
+			// When fade out animation completes, set visible to false.
+			el.addEventListener('animationcomplete__fadeout', function(evt){
+				console.log(el.id, 'animationcomplete__fadeout');
+				el.setAttribute('visible','false');
+				el.setAttribute('material','opacity','0');
+				// unHide all the buttons after teleport is finished.
+				var i;
+				for (i=1; i< 4; i++ ){
+					var btn =document.querySelector('#button'+ i.toString());
+          if (btn != gCurrentPano){
+					  btn.setAttribute('visible', 'true');
+          } else { 
+            btn.setAttribute('visible', 'false');
+          }
+					//n.setAttribute('render-order', '15');
+				}
+				//console.log(el.getAttribute('visible'));
+				//printSpheres(); // view the opacity of the spheres after the click, for debugging,
+			});
+			// When fade in completes, check all the other spheres to insure they are off.
+		}
+	});
+
+	/// Main ==================================
+	var gCurrentPano = "pSphere1"; // global var that tracks which pano is currently in use.
+	var gOldPano = "pSphere1"; // global var used to fade out old pano during teleport animation.
+
+	// used to debug visibility of the sphere panos.
+	function printSpheres(){		
+		var i;
+		for (i=1; i< 4; i++ ){
+			console.log("button"+i.toString()+" opacity: " +document.querySelector("#button"+i.toString()).getAttribute('material').opacity +"   visible:" +document.querySelector("#button"+i.toString()).getAttribute('visible'));
+		}
+	}		
+
+	</script> 
+	<a-scene >	
+	 <a-assets> 
+        <img id="panoBay" src="https://cdn.glitch.com/9255c83d-ae12-4798-86f9-48de7d4ce116%2F360MiamiBayside_1280x640.jpg?v=1560387373057" >
+        <img id="panoBldg" src="https://cdn.glitch.com/9255c83d-ae12-4798-86f9-48de7d4ce116%2F360miamiBldg_1280x641.jpg?v=1560387373594" >
+        <img id="panoRocks" src="https://cdn.glitch.com/9255c83d-ae12-4798-86f9-48de7d4ce116%2F360MontereyRocks_1280x640.jpg?v=1560387373511" >
+      </a-assets>        
+	
+	<a-entity id="button1" geometry="primitive: sphere; radius: 0.5" position="0 0 0" class="clickable" material="color: #aabbcc; opacity: 0.3; shader: flat; blending: additive" buttoncontrol="pano: pSphere1" render-order="15"
+					event-set__enter="_event: mouseenter; material.opacity: 0.8" 
+					event-set__leave="_event: mouseleave; material.opacity: 0.3"
+					animation__fadeout="property: components.material.material.opacity; from: 1; to: 0; startEvents: btnfadeout; dur: 100" ></a-entity>
+		<a-entity  id="button2" geometry="primitive: sphere; radius: 0.5" position="-4 0 -3" class="clickable" material="color: #aabbcc; opacity: 0.3; shader: flat; blending: additive" buttoncontrol="pano: pSphere2" render-order="15"
+					event-set__enter="_event: mouseenter; material.opacity: 0.8" 
+					event-set__leave="_event: mouseleave; material.opacity: 0.3"
+					animation__fadeout="property: components.material.material.opacity; from: 1; to: 0; startEvents: btnfadeout; dur: 100"></a-entity> 
+		<a-entity  id="button3" geometry="primitive: sphere; radius: 0.5" position="5 0 0" class="clickable" material="color: #aabbcc; opacity: 0.3; shader: flat; blending: additive" buttoncontrol="pano: pSphere3" render-order="15"
+					event-set__enter="_event: mouseenter; material.opacity: 0.8" 
+					event-set__leave="_event: mouseleave; material.opacity: 0.3"
+					animation__fadeout="property: components.material.material.opacity; from: 1; to: 0; startEvents: btnfadeout; dur: 100"></a-entity> 
+		
+		<a-entity id="pSphere1" geometry="primitive: sphere; radius: 10" position="0 0 0" visible="true" material="src: #panoBay; opacity: 1; side: back; shader: flat; npot: true; blending: normal; transparent: true" spherecontrol render-order="5"
+		 animation__fadeout="property: components.material.material.opacity; from: 1; to: 0; startEvents: panofadeout; dur: 500"
+		 animation__fadein="property: components.material.material.opacity; from: 0; to: 1; startEvents: panofadein; dur: 500" ></a-entity>
+
+		<a-entity  id="pSphere2" geometry="primitive: sphere; radius: 10" position="-4 0 -3" visible="false" material="src: #panoBldg; opacity: 0; side: back; shader: flat; npot: true; blending: normal; transparent: true" spherecontrol render-order="5"
+		 animation__fadeout="property: components.material.material.opacity; from: 1; to: 0; startEvents: panofadeout; dur: 500" 
+		 animation__fadein="property: components.material.material.opacity; from: 0; to: 1; startEvents: panofadein; dur: 500" ></a-entity>
+
+		<a-entity  id="pSphere3" geometry="primitive: sphere; radius: 10" position="5 0 0"  visible="false" material="src: #panoRocks; opacity: 0; side: back; shader: flat; npot: true; blending: normal; transparent: true" spherecontrol render-order="5"
+		 animation__fadeout="property: components.material.material.opacity; from: 1; to: 0; startEvents: panofadeout; dur: 500" 
+		 animation__fadein="property: components.material.material.opacity; from: 0; to: 1; startEvents: panofadein; dur: 500" ></a-entity>		
+		
+		<a-entity id="camera" camera="active: true" look-controls position="0 0 0" fov="100" 
+			animation__jump="property: position; from: 0 0 0; to: 1 0 0; startEvents: camjump; dur: 500; easing: easeInQuad"></a-entity>		
+		
+
+		<a-entity id="mouseCursor" cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
+		<a-sky color="#000000"></a-sky>
+	</a-scene>
+	</body>
+</html>
